@@ -6,3 +6,5 @@ This project is an easy way to link to PhysX 5 through CMake
 
 ### SETUP
 
+add `physx5::physx5` to your target_link_libaries
+
