@@ -22,13 +22,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
 #ifndef PX_FPU_H
 #define PX_FPU_H
 
+#include "foundation/PxSimpleTypes.h"
 #include "foundation/PxIntrinsics.h"
 #include "foundation/PxAssert.h"
 #include "foundation/PxFoundationConfig.h"
@@ -84,7 +85,7 @@ PX_FOUNDATION_API void PxDisableFPExceptions();
 
 #if PX_WINDOWS_FAMILY
 #include "foundation/windows/PxWindowsFPU.h"
-#elif ((PX_LINUX || PX_OSX) && PX_SSE2)
+#elif (PX_LINUX && PX_SSE2) || PX_OSX
 #include "foundation/unix/PxUnixFPU.h"
 #else
 PX_INLINE physx::PxSIMDGuard::PxSIMDGuard(bool)

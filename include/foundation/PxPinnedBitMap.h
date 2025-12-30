@@ -22,88 +22,46 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
-#ifndef PX_H
-#define PX_H
+#ifndef PX_PINNED_BITMAP_H
+#define PX_PINNED_BITMAP_H
 
-/** \addtogroup foundation
-@{
-*/
-
-#include "foundation/PxSimpleTypes.h"
-
-/** files to always include */
-#include <string.h>
-#include <stdlib.h>
+#include "foundation/PxBitMap.h"
+#include "foundation/PxPinnedArray.h"
 
 #if !PX_DOXYGEN
 namespace physx
 {
 #endif
 
-typedef uint32_t PxU32;
-
-class PxAllocatorCallback;
-class PxErrorCallback;
-struct PxErrorCode;
-class PxAssertHandler;
-
-class PxInputStream;
-class PxInputData;
-class PxOutputStream;
-
-template<class Type>	class PxVec2T;
-typedef PxVec2T<float>	PxVec2;
-
-template<class Type>	class PxVec3T;
-typedef PxVec3T<float>	PxVec3;
-
-template<class Type>	class PxVec4T;
-typedef PxVec4T<float>	PxVec4;
-
-template<class Type>	class PxQuatT;
-typedef PxQuatT<float>	PxQuat;
-
-template<class Type>	class PxMat33T;
-typedef PxMat33T<float>	PxMat33;
-
-template<class Type>	class PxMat34T;
-typedef PxMat34T<float>	PxMat34;
-
-template<class Type>	class PxMat44T;
-typedef PxMat44T<float>	PxMat44;
-
-template<class Type>	class PxTransformT;
-typedef PxTransformT<float>	PxTransform;
-
-class PxPlane;
-class PxBounds3;
-
-/** enum for empty constructor tag*/
-enum PxEMPTY
+/*!
+Overloaded allocation helper for pinned memory support
+*/
+PX_INLINE void* PxBitMapAlloc(PxPinnedAllocator<PxU32>& a, PxU32 bytes, const char* file, int line, uint32_t* cookie)
 {
-	PxEmpty
-};
+	return a.allocate(bytes, file, line, cookie);
+}
 
-/** enum for zero constructor tag for vectors and matrices */
-enum PxZERO
+/*!
+Overloaded de-allocation helper for pinned memory support
+*/
+PX_INLINE void PxBitMapDealloc(PxPinnedAllocator<PxU32>& a, void* ptr, uint32_t* cookie)
 {
-	PxZero
-};
+	a.deallocate(ptr, cookie);
+}
 
-/** enum for identity constructor flag for quaternions, transforms, and matrices */
-enum PxIDENTITY
-{
-	PxIdentity
-};
+/*!
+As opposed to PxPinnedArray, PxBitMapPinned has non-pinned allocation fallback, 
+same as PxPinnedArraySafe.
+*/
+typedef PxBitMapBase< PxPinnedAllocator<PxU32> > PxBitMapPinned;
+
 
 #if !PX_DOXYGEN
 } // namespace physx
 #endif
 
-/** @} */
-#endif
-
+#endif // PX_PINNED_BITMAP_H

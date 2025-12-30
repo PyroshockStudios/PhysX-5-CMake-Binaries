@@ -22,62 +22,53 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
-#ifndef PX_FLIP_MATERIAL_H
-#define PX_FLIP_MATERIAL_H
-/** \addtogroup physics
-@{
-*/
+#ifndef PX_ARRAY_CONVERTER_H
+#define PX_ARRAY_CONVERTER_H
 
-#include "PxParticleMaterial.h"
+#include "cudamanager/PxCudaContext.h"
+#include "cudamanager/PxCudaContextManager.h"
+
+#include "foundation/PxSimpleTypes.h"
+#include "foundation/PxVec4.h"
+
 
 #if !PX_DOXYGEN
 namespace physx
 {
 #endif
 
-	class PxScene;
-	/**
-	\brief Material class to represent a set of FLIP particle material properties.
+#if PX_SUPPORT_GPU_PHYSX
 
-	@see #PxPhysics.createFLIPMaterial()
+	/**
+	\brief Utility class to convert gpu arrays to a different memory layout
 	*/
-	class PxFLIPMaterial : public PxParticleMaterial
+	class PxArrayConverter
 	{
 	public:
 		/**
-		\brief Sets viscosity
-	
-		\param[in] viscosity Viscosity. <b>Range:</b> [0, PX_MAX_F32)
-
-		@see #getViscosity()
-		*/
-		virtual		void	setViscosity(PxReal viscosity) = 0;
+		\brief Helper function to merge two separate PxVec4 arrays into one interleaved PxVec3 array
+		\param[in] verticesD The vertices device memory buffer
+		\param[in] normalsD The normals device memory buffer
+		\param[in] length The number of vertices and normals
+		\param[out] interleavedResultBufferD The resulting interleaved buffer containing 2*length elements with the format vertex0, normal0, vertex1, normal1...
+		\param[in] stream The cuda stream on which the conversion is processed
+		*/		
+		virtual void interleaveGpuBuffers(const PxVec4* verticesD, const PxVec4* normalsD, PxU32 length, PxVec3* interleavedResultBufferD, CUstream stream) = 0;
 
 		/**
-		\brief Retrieves the viscosity value.
-
-		\return The viscosity value.
-
-		@see #setViscosity()
+		\brief Destructor
 		*/
-		virtual		PxReal		getViscosity() const = 0;
-
-		virtual		const char*		getConcreteTypeName() const { return "PxFLIPMaterial"; }
-
-	protected:
-		PX_INLINE			PxFLIPMaterial(PxType concreteType, PxBaseFlags baseFlags) : PxParticleMaterial(concreteType, baseFlags) {}
-		PX_INLINE			PxFLIPMaterial(PxBaseFlags baseFlags) : PxParticleMaterial(baseFlags) {}
-		virtual				~PxFLIPMaterial() {}
-		virtual		bool	isKindOf(const char* name) const { return !::strcmp("PxFLIPMaterial", name) || PxParticleMaterial::isKindOf(name); }
+		virtual ~PxArrayConverter() {}
 	};
+
+#endif	
 
 #if !PX_DOXYGEN
 } // namespace physx
 #endif
 
-/** @} */
 #endif

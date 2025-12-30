@@ -22,39 +22,52 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
-#ifndef PX_ATTACHMENT_H
-#define PX_ATTACHMENT_H
+#ifndef PX_PHYSICS_DEFORMABLE_SURFACE_FLAGS_H
+#define PX_PHYSICS_DEFORMABLE_SURFACE_FLAGS_H
 
-#include "PxConeLimitedConstraint.h"
-#include "PxFiltering.h"
-#include "foundation/PxVec4.h"
+#include "foundation/PxFlags.h"
+#include "foundation/PxSimpleTypes.h"
 
-/** \addtogroup physics
-@{
-*/
 
 #if !PX_DOXYGEN
 namespace physx
 {
 #endif
 
-/**
-\brief Struct to specify attachment between a particle/vertex and a rigid
-*/
-struct PxParticleRigidAttachment : public PxParticleRigidFilterPair
+struct PxDeformableSurfaceFlag
 {
-	PX_ALIGN(16, PxVec4 mLocalPose0); //!< local pose in body frame - except for statics, these are using world positions.
-
-	PxConeLimitParams mParams; //!< Parameters to specify cone constraints
+	enum Enum
+	{
+		eUSE_ANISOTROPIC_MODEL		= 1 << 0,	// 0: use isotropic model, 1: use anistropic model
+		eENABLE_FLATTENING			= 1 << 1	// 0: query rest bending angle from rest shape, 1: use zero rest bending angle
+	};
 };
+
+typedef PxFlags<PxDeformableSurfaceFlag::Enum, PxU16> PxDeformableSurfaceFlags;
+
+/**
+\brief Identifies input and output buffers for PxDeformableSurface.
+*/
+struct PxDeformableSurfaceDataFlag
+{
+	enum Enum
+	{
+		eNONE						= 0,
+		ePOSITION_INVMASS			= 1 << 0,
+		eVELOCITY					= 1 << 1,
+		eREST_POSITION				= 1 << 2,
+		eALL = ePOSITION_INVMASS | eVELOCITY | eREST_POSITION
+	};
+};
+
+typedef PxFlags<PxDeformableSurfaceDataFlag::Enum, PxU32> PxDeformableSurfaceDataFlags;
 
 #if !PX_DOXYGEN
 } // namespace physx
 #endif
 
-/** @} */
-#endif
+#endif // PX_PHYSICS_DEFORMABLE_SURFACE_FLAGS_H

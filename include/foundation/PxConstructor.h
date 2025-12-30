@@ -22,38 +22,34 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
-#ifndef PX_VEHICLE_UTIL_H
-#define PX_VEHICLE_UTIL_H
-
-#include "foundation/Px.h"
+#ifndef PX_CONSTRUCTOR_H
+#define PX_CONSTRUCTOR_H
 
 #if !PX_DOXYGEN
 namespace physx
 {
 #endif
 
-struct PxVehicleWheelQueryResult;
 
-/**
-\brief Test if all wheels of a vehicle are in the air by querying the wheel query data 
-stored in the last call to PxVehicleUpdates. If all wheels are in the air then true is returned.  
+/** enum for zero constructor tag for vectors and matrices */
+enum PxZERO
+{
+	PxZero
+};
 
-\note False is returned if any wheel can reach to the ground.
-
-\note If vehWheelQueryResults.wheelQueryResults is NULL or vehWheelQueryResults.nbWheelQueryResults is 0 then true is returned.
-This function does not account for wheels that have been disabled since the last execution of PxVehicleUpdates so it is possible
-that wheels disabled more recently than the last call to PxVehicleUpdates report are treated as touching the ground.
-
-\return True if the vehicle is in the air, false if any wheel is touching the ground.
-*/
-PX_DEPRECATED bool PxVehicleIsInAir(const PxVehicleWheelQueryResult& vehWheelQueryResults);
+/** enum for identity constructor flag for quaternions, transforms, and matrices */
+enum PxIDENTITY
+{
+	PxIdentity
+};
 
 #if !PX_DOXYGEN
 } // namespace physx
 #endif
 
-#endif
+#endif //PX_CONSTRUCTOR_H
+

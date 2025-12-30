@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
@@ -30,16 +30,7 @@
 #define PX_PREPROCESSOR_H
 
 #include <stddef.h>
-#if !defined(PX_GENERATE_META_DATA)
-#include <ciso646>  
-#endif
-/** \addtogroup foundation
-  @{
-*/
 
-#ifndef PX_ENABLE_FEATURES_UNDER_CONSTRUCTION
-#define PX_ENABLE_FEATURES_UNDER_CONSTRUCTION 0
-#endif
 
 #define PX_STRINGIZE_HELPER(X) #X
 #define PX_STRINGIZE(X) PX_STRINGIZE_HELPER(X)
@@ -88,6 +79,13 @@ Compiler defines, see http://sourceforge.net/p/predef/wiki/Compilers/
 	#error "Unknown compiler"
 #endif
 
+// not treated as its own compiler because clang, for example, can, in theory, compile CUDA code too
+#if defined(__CUDACC__)
+	#define PX_CUDA_COMPILER 1
+#else
+	#define PX_CUDA_COMPILER 0
+#endif
+
 /**
 Operating system defines, see http://sourceforge.net/p/predef/wiki/OperatingSystems/
 */
@@ -95,19 +93,10 @@ Operating system defines, see http://sourceforge.net/p/predef/wiki/OperatingSyst
 	#define PX_WIN64 1
 #elif defined(_WIN32) // note: _M_PPC implies _WIN32
 	#define PX_WIN32 1
-#elif defined(__ANDROID__)
-	#define PX_ANDROID 1
-#elif defined(__linux__) || defined (__EMSCRIPTEN__) // note: __ANDROID__ implies __linux__
+#elif defined(__linux__) || defined (__EMSCRIPTEN__)
 	#define PX_LINUX 1
 #elif defined(__APPLE__)
-	#include <TargetConditionals.h>
-	#if TARGET_OS_IPHONE
-		#define PX_IOS 1
-	#elif TARGET_OS_OSX
-		#define PX_OSX 1
-	#else
-		#error "Unknown Apple target OS"
-	#endif
+	#define PX_OSX 1
 #elif defined(__NX__)
 	#define PX_SWITCH 1
 #else
@@ -164,14 +153,8 @@ define anything not defined on this platform to 0
 #ifndef PX_WIN32
 	#define PX_WIN32 0
 #endif
-#ifndef PX_ANDROID
-	#define PX_ANDROID 0
-#endif
 #ifndef PX_LINUX
 	#define PX_LINUX 0
-#endif
-#ifndef PX_IOS
-	#define PX_IOS 0
 #endif
 #ifndef PX_OSX
 	#define PX_OSX 0
@@ -233,8 +216,8 @@ family shortcuts
 #define PX_GCC_FAMILY (PX_CLANG || PX_GCC)
 // os
 #define PX_WINDOWS_FAMILY (PX_WIN32 || PX_WIN64)
-#define PX_LINUX_FAMILY (PX_LINUX || PX_ANDROID)
-#define PX_APPLE_FAMILY (PX_IOS || PX_OSX)                  // equivalent to #if __APPLE__
+#define PX_LINUX_FAMILY PX_LINUX
+#define PX_APPLE_FAMILY PX_OSX                              // equivalent to #if __APPLE__
 #define PX_UNIX_FAMILY (PX_LINUX_FAMILY || PX_APPLE_FAMILY) // shortcut for unix/posix platforms
 #if defined(__EMSCRIPTEN__)
 	#define PX_EMSCRIPTEN 1
@@ -262,7 +245,7 @@ C++ standard library defines
 Assert macro
 */
 #ifndef PX_ENABLE_ASSERTS
-	#if PX_DEBUG && !defined(__CUDACC__)
+	#if PX_DEBUG && !PX_CUDA_COMPILER
 		#define PX_ENABLE_ASSERTS 1
 	#else
 		#define PX_ENABLE_ASSERTS 0
@@ -332,8 +315,8 @@ Force inline macro
 */
 #if PX_VC
 	#define PX_FORCE_INLINE __forceinline
-#elif PX_LINUX // Workaround; Fedora Core 3 do not agree with force inline and PxcPool
-	#define PX_FORCE_INLINE inline
+#elif PX_CUDA_COMPILER
+	#define PX_FORCE_INLINE __forceinline__
 #elif PX_GCC_FAMILY
 	#define PX_FORCE_INLINE inline __attribute__((always_inline))
 #else
@@ -354,7 +337,7 @@ Noinline macro
 /**
 Restrict macro
 */
-#if defined(__CUDACC__)
+#if PX_CUDA_COMPILER
 	#define PX_RESTRICT __restrict__
 #else
 	#define PX_RESTRICT __restrict
@@ -372,12 +355,20 @@ Noalias macro
 /**
 Override macro
 */
-#if PX_WINDOWS_FAMILY
-	#define PX_OVERRIDE	override
+#define PX_OVERRIDE override
+
+/**
+Final macro
+ */
+#define PX_FINAL final
+
+/**
+Unused attribute macro. Only on GCC for now.
+ */
+#if PX_GCC_FAMILY
+	#define PX_UNUSED_ATTRIBUTE __attribute__((unused))
 #else
-	// PT: we don't really need to support it on all platforms, as long as
-	// we compile the code on at least one platform that supports it.
-	#define PX_OVERRIDE
+	#define PX_UNUSED_ATTRIBUTE 
 #endif
 
 /**
@@ -399,7 +390,7 @@ This declaration style is parsed correctly by Visual Assist.
 		#define PX_ALIGN(alignment, decl) decl __attribute__((aligned(alignment)))
 		#define PX_ALIGN_PREFIX(alignment)
 		#define PX_ALIGN_SUFFIX(alignment) __attribute__((aligned(alignment)))
-	#elif defined __CUDACC__
+	#elif PX_CUDA_COMPILER
 		#define PX_ALIGN(alignment, decl) __align__(alignment) decl
 		#define PX_ALIGN_PREFIX(alignment)
 		#define PX_ALIGN_SUFFIX(alignment) __align__(alignment))
@@ -426,11 +417,15 @@ Use these macro definitions to create warnings for deprecated functions
 General defines
 */
 
-// static assert
-#if(defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (PX_APPLE_FAMILY) || (PX_SWITCH) || (PX_CLANG && PX_ARM) || (PX_CLANG && PX_A64)
-	#define PX_COMPILE_TIME_ASSERT(exp) typedef char PX_CONCAT(PxCompileTimeAssert_Dummy, __COUNTER__)[(exp) ? 1 : -1] __attribute__((unused))
+
+#if PX_LINUX && PX_CLANG && !PX_CUDA_COMPILER
+#define PX_COMPILE_TIME_ASSERT(exp) \
+_Pragma(" clang diagnostic push") \
+_Pragma(" clang diagnostic ignored \"-Wc++98-compat\"") \
+static_assert(exp, "") \
+_Pragma(" clang diagnostic pop")
 #else
-	#define PX_COMPILE_TIME_ASSERT(exp) typedef char PxCompileTimeAssert_Dummy[(exp) ? 1 : -1]
+#define PX_COMPILE_TIME_ASSERT(exp) static_assert(exp, "")
 #endif
 
 #if PX_GCC_FAMILY
@@ -442,9 +437,12 @@ General defines
 #define PX_OFFSETOF_BASE 0x100 // casting the null ptr takes a special-case code path, which we don't want
 #define PX_OFFSET_OF_RT(Class, Member)	(reinterpret_cast<size_t>(&reinterpret_cast<Class*>(PX_OFFSETOF_BASE)->Member) - size_t(PX_OFFSETOF_BASE))
 
-// check that exactly one of NDEBUG and _DEBUG is defined
-#if !defined(NDEBUG) ^ defined(_DEBUG)
-	#error Exactly one of NDEBUG and _DEBUG needs to be defined!
+
+#if PX_WINDOWS_FAMILY
+	// check that exactly one of NDEBUG and _DEBUG is defined
+	#if !defined(NDEBUG) ^ defined(_DEBUG)
+		#error Exactly one of NDEBUG and _DEBUG needs to be defined!
+	#endif
 #endif
 
 // make sure PX_CHECKED is defined in all _DEBUG configurations as well
@@ -452,7 +450,7 @@ General defines
 	#error PX_CHECKED must be defined when PX_DEBUG is defined
 #endif
 
-#ifdef __CUDACC__
+#if PX_CUDA_COMPILER
 	#define PX_CUDA_CALLABLE __host__ __device__
 #else
 	#define PX_CUDA_CALLABLE
@@ -476,7 +474,7 @@ PX_CUDA_CALLABLE PX_INLINE void PX_UNUSED(T const&)
 		char _;
 		long a;
 	};
-#elif PX_ANDROID || (PX_CLANG && PX_ARM)
+#elif PX_CLANG && PX_ARM
 	struct PxPackValidation
 	{
 		char _;
@@ -527,13 +525,12 @@ protected:                  \
 #endif
 
 #ifndef PX_SUPPORT_EXTERN_TEMPLATE
-	#define PX_SUPPORT_EXTERN_TEMPLATE ((!PX_ANDROID) && (PX_VC != 11))
+	#define PX_SUPPORT_EXTERN_TEMPLATE (PX_VC != 11)
 #else
 	#define PX_SUPPORT_EXTERN_TEMPLATE 0
 #endif
 
 #define PX_FL	__FILE__, __LINE__
 
-/** @} */
 #endif
 

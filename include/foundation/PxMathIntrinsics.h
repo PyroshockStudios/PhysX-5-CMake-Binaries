@@ -22,18 +22,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
 #ifndef PX_MATH_INTRINSICS_H
 #define PX_MATH_INTRINSICS_H
 
+#include <string.h>
 #include "foundation/PxPreprocessor.h"
+#include "foundation/PxSimpleTypes.h"
 
 #if PX_WINDOWS_FAMILY
 #include "foundation/windows/PxWindowsMathIntrinsics.h"
-#elif(PX_LINUX || PX_ANDROID || PX_APPLE_FAMILY)
+#elif(PX_LINUX || PX_APPLE_FAMILY)
 #include "foundation/unix/PxUnixMathIntrinsics.h"
 #elif PX_SWITCH
 #include "foundation/switch/PxSwitchMathIntrinsics.h"

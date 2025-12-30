@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
@@ -3530,13 +3530,9 @@ template <> PX_FORCE_INLINE VecU32V V4U32SplatElement<3>(VecU32V a) { return vdu
 template <int index>
 PX_FORCE_INLINE Vec4V V4SplatElement(Vec4V a)
 {
-	if(index == 0)
+	if(index < 2)
 	{
-		return vdupq_lane_f32(vget_low_f32(a), 0);
-	}
-	else if (index == 1)
-	{
-		return vdupq_lane_f32(vget_low_f32(a), 1);
+		return vdupq_lane_f32(vget_low_f32(a), index);
 	}
 	else if(index == 2)
 	{

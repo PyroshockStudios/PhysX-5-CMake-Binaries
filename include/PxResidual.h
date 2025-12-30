@@ -22,15 +22,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
+#ifndef PX_RESIDUAL_H
+#define PX_RESIDUAL_H
 
-#ifndef PX_HAIRSYSTEM_GEOMETRY_H
-#define PX_HAIRSYSTEM_GEOMETRY_H
-/** \addtogroup geomutils
-@{
-*/
-#include "geometry/PxGeometry.h"
+#include "PxPhysXConfig.h"
 
 #if !PX_DOXYGEN
 namespace physx
@@ -38,36 +37,47 @@ namespace physx
 #endif
 
 	/**
-	\brief Hair system geometry class.
+	\brief Structure representing residual values.
 
+	This struct holds residual values, typically used in physics simulations to measure error or discrepancy.
 	*/
-	class PxHairSystemGeometry : public PxGeometry
+	struct PxResidual
 	{
-	public:
-		/**
-		\brief Default constructor.
-		*/
-		PX_INLINE PxHairSystemGeometry() : PxGeometry(PxGeometryType::eHAIRSYSTEM) {}
+		PxReal rmsResidual; //!< Root mean square residual value.
+		PxReal maxResidual; //!< Maximum residual value.
 
-		/**
-		\brief Returns true if the geometry is valid.
+		PxResidual() : rmsResidual(0.0f), maxResidual(0.0f) {}
+	};
 
-		\return  True if the current settings are valid for shape creation.
+	/**
+	\brief Structure representing residual values
 
-		@see PxRigidActor::createShape, PxPhysics::createShape
-		*/
-		PX_FORCE_INLINE bool isValid() const
-		{
-			if(mType != PxGeometryType::eHAIRSYSTEM)
-				return false;
+	This struct holds residual values for both position and velocity iterations.
+	*/
+	struct PxResiduals
+	{
+		PxResidual positionIterationResidual; //!< Residual values for position iteration.
+		PxResidual velocityIterationResidual; //!< Residual values for velocity iteration.
+	};
 
-			return true;
-		}
+	typedef PxResiduals PxArticulationResidual;
+	typedef PxResiduals PxSceneResidual;
+
+	/**
+	\brief Structure representing residual values for a constraint.
+
+	This struct holds residual values for both position and velocity iterations specific to a constraint.
+	*/
+	struct PxConstraintResidual
+	{
+		PxReal positionIterationResidual; //!< Residual value for position iteration.
+		PxReal velocityIterationResidual; //!< Residual value for velocity iteration.
+
+		PxConstraintResidual() : positionIterationResidual(0.0f), velocityIterationResidual(0.0f) {}
 	};
 
 #if !PX_DOXYGEN
-} // namespace physx
+}
 #endif
 
-  /** @} */
 #endif

@@ -22,53 +22,55 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
-#ifndef PX_HAIR_SYSTEM_FLAG_H
-#define PX_HAIR_SYSTEM_FLAG_H
+#ifndef PX_CONVEX_GEOMETRY_EXT_H
+#define PX_CONVEX_GEOMETRY_EXT_H
 
-#include "PxPhysXConfig.h"
-#include "foundation/PxFlags.h"
+#include "foundation/PxMat33.h"
+#include "foundation/PxTransform.h"
+#include "geometry/PxConvexCoreGeometry.h"
 
 #if !PX_DOXYGEN
 namespace physx
 {
 #endif
 
-	/**
-	\brief Identifies input and output buffers for PxHairSystem
-	\see PxHairSystemData::readData(), PxHairSystemData::writeData(), PxBuffer
-	*/
-	struct PxHairSystemData
-	{
-		enum Enum
-		{
-			eNONE = 0,												//!< No data specified
-			ePOSITION_INVMASS = 1 << 0,								//!< Specifies the position (first 3 floats) and inverse mass (last float) data (array of PxVec4 * max number of vertices)
-			eVELOCITY = 1 << 1,										//!< Specifies the velocity (first 3 floats) data (array of PxVec4 * max number of vertices)
-			eALL = ePOSITION_INVMASS | eVELOCITY					//!< Specifies everything
-		};
-	};
-	typedef PxFlags<PxHairSystemData::Enum, PxU32> PxHairSystemDataFlags;
+class PxBounds3;
+class PxRenderOutput;
+
+/**
+\brief Convex geometry helpers
+*/
+class PxConvexCoreExt
+{
+public:
 
 	/**
-	\brief Binary settings for hair system simulation
+	\brief Compute mass properties of the convex core geometry.
+	\param convex The convex geometry.
+	\param[out] density1Mass The mass of the geometry assuming unit density.
+	\param[out] inertiaTensor The inertia tensor of the geometry.
+	\param[out] centerOfMass The center of mass of the geometry.
 	*/
-	struct PxHairSystemFlag
-	{
-		enum Enum
-		{
-			eDISABLE_SELF_COLLISION =		1 << 0, //!< Determines if self-collision between hair vertices is ignored
-			eDISABLE_EXTERNAL_COLLISION =	1 << 1, //!< Determines if collision between hair and external bodies is ignored
-			eDISABLE_TWOSIDED_ATTACHMENT =	1 << 2  //!< Determines if attachment constraint is also felt by body to which the hair is attached
-		};
-	};
-	typedef PxFlags<PxHairSystemFlag::Enum, PxU32> PxHairSystemFlags;
+	static void computeMassInfo(const PxConvexCoreGeometry& convex, PxReal& density1Mass, PxMat33& inertiaTensor, PxVec3& centerOfMass);
+
+	/**
+	\brief Visualize the convex core geometry
+	\param convex The convex geometry.
+	\param pose The pose of the geometry in world space
+	\param drawCore If true, draw the core inside the full convex geometry including the margin
+	\param cullbox The culling box for visualization
+	\param out The render output object to use for visualization
+	*/
+	static void visualize(const PxConvexCoreGeometry& convex, const PxTransform& pose, bool drawCore, const PxBounds3& cullbox, PxRenderOutput& out);
+
+};
 
 #if !PX_DOXYGEN
-} // namespace physx
+}
 #endif
 
 #endif

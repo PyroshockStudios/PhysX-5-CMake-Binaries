@@ -22,16 +22,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2022 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
-#ifndef PX_PHYSICS_FEM_CLOTH_FLAGS_H
-#define PX_PHYSICS_FEM_CLOTH_FLAGS_H
+#ifndef PX_DEFORMABLE_BODY_FLAGS_H
+#define PX_DEFORMABLE_BODY_FLAGS_H
 
+#include "PxPhysXConfig.h"
 #include "foundation/PxFlags.h"
-#include "foundation/PxSimpleTypes.h"
-
 
 #if !PX_DOXYGEN
 namespace physx
@@ -39,37 +38,22 @@ namespace physx
 #endif
 
 /**
-\brief Identifies input and output buffers for PxFEMCloth.
-@see PxFEMClothData::readData(), PxFEMClothData::writeData(), PxBuffer.
+\brief Flags to enable or disable special modes of a PxDeformableBody instance
 */
-struct PxFEMClothData
+struct PxDeformableBodyFlag
 {
 	enum Enum
 	{
-		eNONE = 0,
-		ePOSITION_INVMASS = 1 << 0,
-		eVELOCITY = 1 << 1,
-		eREST_POSITION = 1 << 2,
-		eALL = ePOSITION_INVMASS | eVELOCITY | eREST_POSITION
+		eDISABLE_SELF_COLLISION = 1 << 0,	//!< Determines if self collision will be detected and resolved
+		eENABLE_SPECULATIVE_CCD = 1 << 1,	//!< Enables support for speculative contact generation, see #PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD
+		eKINEMATIC = 1 << 2					//!< Enables support for kinematic motion of the simulation mesh, see #PxRigidBodyFlag::eKINEMATIC
 	};
 };
 
-typedef PxFlags<PxFEMClothData::Enum, PxU32> PxFEMClothDataFlags;
-
-struct PxFEMClothFlag
-{
-	enum Enum
-	{
-		eDISABLE_SELF_COLLISION = 1 << 0,
-		eUSE_ISOTROPIC_CLOTH = 1 << 1,          // 0: use anistropic model
-		eUSE_REST_POSITION_FOR_BENDING = 1 << 2 // 0: use zero bending angle
-	};
-};
-
-typedef PxFlags<PxFEMClothFlag::Enum, PxU32> PxFEMClothFlags;
+typedef PxFlags<PxDeformableBodyFlag::Enum, PxU8> PxDeformableBodyFlags;
 
 #if !PX_DOXYGEN
-} // namespace physx
+}
 #endif
 
-#endif
+#endif // PX_DEFORMABLE_BODY_FLAGS_H
