@@ -6,7 +6,7 @@ project(PhysX5CMakeBinaries)
 # -------------------------------------------------------------------------
 # We need to set the binary directory based on the platform FIRST.
 if(WIN32)
-    set(PX_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/win.x86_64.vc143.mt")
+    set(PX_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/win.x86_64.vc145.md")
 elseif(UNIX AND NOT APPLE)
     message(STATUS "Using x86-84 binaries built with the official SteamOS docker...")
     set(PX_BIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/linux.x86_64.gcc_steamos") 
