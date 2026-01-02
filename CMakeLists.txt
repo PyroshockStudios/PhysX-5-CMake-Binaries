@@ -54,6 +54,31 @@ macro(add_physx_module NAME DLL_NAME LIB_NAME)
     )
 endmacro()
 
+macro(add_physx_static_module NAME LIB_NAME)
+    add_library(${NAME} STATIC IMPORTED GLOBAL)
+    
+    if(WIN32)
+        set_target_properties(${NAME} PROPERTIES
+            IMPORTED_LOCATION_RELEASE "${PX_BIN_DIR}/release/${LIB_NAME}.lib"
+            IMPORTED_LOCATION_DEBUG   "${PX_BIN_DIR}/debug/${LIB_NAME}.lib"
+        )
+    elseif(UNIX)
+        set_target_properties(${NAME} PROPERTIES
+            IMPORTED_LOCATION_RELEASE "${PX_BIN_DIR}/release/lib${LIB_NAME}.a"
+            IMPORTED_LOCATION_DEBUG   "${PX_BIN_DIR}/debug/lib${LIB_NAME}.a"
+        )
+    else()
+        message(FATAL_ERROR "Platform not supported in macro!")
+    endif() 
+
+    # Standard config mapping
+    set_target_properties(${NAME} PROPERTIES
+        MAP_IMPORTED_CONFIG_MINSIZEREL Release
+        MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
+    )
+endmacro()
+
+
 # -------------------------------------------------------------------------
 # 3. Define the Individual Targets
 # -------------------------------------------------------------------------
@@ -73,26 +98,11 @@ target_link_libraries(PhysXCore INTERFACE PhysXCommon)
 add_physx_module(PhysXCooking PhysXCooking_64 PhysXCooking_64)
 target_link_libraries(PhysXCooking INTERFACE PhysXCore)
 
-# -------------------------------------------------------------------------
-# 4. PhysXExtensions (Static Lib Handling)
-# -------------------------------------------------------------------------
-add_library(PhysXExtensions STATIC IMPORTED GLOBAL)
-
-if(WIN32)
-    set_target_properties(PhysXExtensions PROPERTIES
-        IMPORTED_LOCATION_RELEASE "${PX_BIN_DIR}/release/PhysXExtensions_static_64.lib"
-        IMPORTED_LOCATION_DEBUG   "${PX_BIN_DIR}/debug/PhysXExtensions_static_64.lib"
-    )
-elseif(UNIX)
-    set_target_properties(PhysXExtensions PROPERTIES
-        IMPORTED_LOCATION_RELEASE "${PX_BIN_DIR}/release/libPhysXExtensions_static_64.a"
-        IMPORTED_LOCATION_DEBUG   "${PX_BIN_DIR}/debug/libPhysXExtensions_static_64.a"
-    )
-else()
-    message(FATAL_ERROR "PhysX Extensions not defined for this platform!")
-endif()
-
+add_physx_static_module(PhysXExtensions PhysXExtensions_static_64)
 target_link_libraries(PhysXExtensions INTERFACE PhysXCore)
+
+add_physx_static_module(PhysXVehicle2 PhysXVehicle2_static_64)
+target_link_libraries(PhysXVehicle2 INTERFACE PhysXCore)
 
 # -------------------------------------------------------------------------
 # 5. Create the Main "PhysX5" Interface Library
@@ -101,7 +111,8 @@ add_library(physx5 INTERFACE)
 
 target_include_directories(physx5 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-target_link_libraries(physx5 INTERFACE 
+target_link_libraries(physx5 INTERFACE
+    PhysXVehicle2 
     PhysXExtensions 
     PhysXCooking 
     PhysXCore
